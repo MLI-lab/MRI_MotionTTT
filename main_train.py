@@ -84,16 +84,16 @@ if __name__ == '__main__':
 
     # # Load either list of test examples of list of validation examples
     args.data_drive= "/media/ssd0/" # prefix for all paths
-    args.save_exp_results_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/motion_MRI_TTT_results_tobit_kun/"
+    args.save_exp_results_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/"
 
     # Paths for training
-    args.train_set_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/volume_dataset_freqEnc170_train_len40.pickle"
+    args.train_set_path = "volume_dataset_freqEnc170_train_len40.pickle"
     args.train_data_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Train_converted/"
-    args.train_mask_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/mask_3D_size_218_170_256_R_4_poisson_disc.pickle"
+    args.train_mask_path = "mask_3D_size_218_170_256_R_4_poisson_disc.pickle"
     args.train_sensmaps_path="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Train_s_maps_3D/"
-    args.val_set_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/volume_dataset_freqEnc170_val_len4.pickle"
+    args.val_set_path = "volume_dataset_freqEnc170_val_len4.pickle"
     args.val_data_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Val_converted/"
-    args.val_mask_path = "cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/mask_3D_size_218_170_256_R_4_poisson_disc.pickle"
+    args.val_mask_path = "mask_3D_size_218_170_256_R_4_poisson_disc.pickle"
     args.val_sensmaps_path="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Val_s_maps_3D/"
 
     # # Training arguments
