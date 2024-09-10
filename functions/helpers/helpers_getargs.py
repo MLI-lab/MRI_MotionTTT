@@ -28,10 +28,24 @@ def get_args():
     )
 
     parser.add_argument(
+        '--experiment_name_l1_recon',
+        default="",
+        type=str,
+        help='Name of l1 recon experiment. E.g., _lr001'
+    )
+
+    parser.add_argument(
         '--experiment_name_alt_opt',
         default="",
         type=str,
         help='Name of alt opt experiment. E.g., _lr001'
+    )
+
+    parser.add_argument(
+        '--experiment_name_modelTTT',
+        default="",
+        type=str,
+        help='Name of modelTTT experiment. E.g., _lr001'
     )
 
     parser.add_argument(
@@ -70,10 +84,38 @@ def get_args():
     )
 
     parser.add_argument(
+        '--TTT_vivo',
+        default=False,
+        action='store_true',
+        help='Whether to apply TTT to the model on the in-vivo test set.'
+    )
+
+    parser.add_argument(
+        '--args.TTT_finetune_after_DCTh',
+        default=False,
+        action='store_true',
+        help='Whether to fine-tune the mot params after DC loss thresholding.'
+    )
+
+    parser.add_argument(
+        '--l1_recon',
+        default=False,
+        action='store_true',
+        help='Whether to compute L1 reconstructions.'
+    )
+
+    parser.add_argument(
         '--alt_opt',
         default=False,
         action='store_true',
         help='Whether to apply alternating optimization.'
+    )
+
+    parser.add_argument(
+        '--alt_opt_vivo',
+        default=False,
+        action='store_true',
+        help='Whether to apply alternating optimization on the in-vivo test set.'
     )
 
     parser.add_argument(
@@ -88,6 +130,13 @@ def get_args():
         default=False,
         action='store_true',
         help='Whether to apply only motion estimation within alternating optimization.'
+    )
+
+    parser.add_argument(
+        '--modelTTT',
+        default=False,
+        action='store_true',
+        help='Whether to apply modelTTT.'
     )
 
     parser.add_argument(
@@ -118,7 +167,9 @@ def get_args():
     parser = get_optimizer_args(parser)
     parser = get_TTT_args(parser)
     parser = get_args_motion(parser)
+    parser = get_l1_recon_args(parser)
     parser = get_alt_opt_args(parser)
+    parser = get_TTT_finetune_args(parser)
 
     args = parser.parse_args()
 
@@ -138,6 +189,108 @@ def secure_args_from_sys(args):
 
     return args_from_sys
 
+def get_TTT_finetune_args(parser):
+
+    parser.add_argument(
+        '--experiment_name_TTT_finetune',
+        default="_",
+        type=str,
+        help='Name of TTT finetune experiment.'
+    )
+
+    parser.add_argument(
+        '--lr_TTT_finetune',
+        default=5e-1,
+        type=float,
+        help='Learning rate for TTT finetune.'
+    )
+
+    parser.add_argument(
+        '--num_steps_TTT_finetune',
+        default=20,
+        type=int,
+        help='Number of fitting steps for TTT finetune.'
+    )
+
+    return parser
+
+def get_modelTTT_args(parser):
+
+    parser.add_argument(
+        '--modelTTT_gt_motion',
+        default=False,
+        action='store_true',
+        help='Whether to use ground truth or predicted motion for modelTTT.'
+    )
+
+    parser.add_argument(
+        '--lr_modelTTT',
+        default=3e-4,
+        type=float,
+        help='Learning rate for modelTTT.'
+    )
+
+    parser.add_argument(
+        '--num_steps_modelTTT',
+        default=200,
+        type=int,
+        help='Number of fitting steps for modelTTT.'
+    )
+
+    parser.add_argument(
+        '--num_slices_per_grad_step_modelTTT',
+        default=20,
+        type=int,
+        help='Number of slices to use for each gradient step for modelTTT.'
+    )
+
+    parser.add_argument(
+        '--window_size_modelTTT',
+        default=10,
+        type=int,
+        help='Window size for early stopping.'
+    )
+
+    parser.add_argument(
+        '--modelTTT_use_nufft_with_dcomp',
+        default=False,
+        action='store_true',
+        help='Whether to use adjont NUFFT with density compensation at network input during modelTTT.'
+    )
+
+    parser.add_argument(
+        '--modelTTT_lam_recon',
+        default=1e-3,
+        type=float,
+        help='Lambda for L1 regularization during modelTTT.'
+    )
+
+    return parser
+
+def get_l1_recon_args(parser):
+
+    parser.add_argument(
+        '--lr_l1_recon',
+        default=1e-4,
+        type=float,
+        help='Learning rate for L1 recon module.'
+    )
+
+    parser.add_argument(
+        '--num_steps_l1_recon',
+        default=2000,
+        type=int,
+        help='Number of fitting steps for L1 recon module.'
+    )
+
+    parser.add_argument(
+        '--lam_l1_recon',
+        default=1e-3,
+        type=float,
+        help='Lambda for L1 regularization.'
+    )
+
+    return parser
 
 def get_alt_opt_args(parser):
 
@@ -207,10 +360,31 @@ def get_alt_opt_args(parser):
     )
 
     parser.add_argument(
+        '--altopt_recon_only_with_motionKnowledge_discretized',
+        default=False,
+        action='store_true',
+        help='Whether to apply only reconstruction within alternating optimization with motion knowledge discretized.'
+    )
+
+    parser.add_argument(
+        '--altopt_recon_only_with_motionKnowledge_remove_intraMotion',
+        default=False,
+        action='store_true',
+        help='Whether to apply only reconstruction within alternating optimization with motion knowledge and remove intra-shot motion.'
+    )
+
+    parser.add_argument(
         '--alt_opt_on_TTTexp',
         default=False,
         action='store_true',
         help='Whether to load motion from TTT experiment and save results into TTT exp.'
+    )
+
+    parser.add_argument(
+        '--alt_opt_on_TTT_load_from_phase',
+        default=0,
+        type=int,
+        help='Which phase to load from TTT experiment.'
     )
 
     parser.add_argument(
@@ -219,6 +393,13 @@ def get_alt_opt_args(parser):
         type=int,
         help='Maximum coil size for NUFFT during alt opt. None means all coils are processed in one batch.'
     )
+
+    # parser.add_argument(
+    #     '--alt_opt_on_TTTexp_use_est_motion',
+    #     default=False,
+    #     action='store_true',
+    #     help='Whether to use estimated motion from TTT experiment. If false use all zeros.'
+    # )
 
     parser.add_argument(
         '--altopt_dc_thresholding',
@@ -229,7 +410,7 @@ def get_alt_opt_args(parser):
 
     parser.add_argument(
         '--altopt_dc_threshold',
-        default=0.013,
+        default=0.65,
         type=float,
         help='Threshold for dc loss.'
     )
@@ -294,6 +475,51 @@ def get_args_motion(parser):
         help='Random seed for random motion.'
     )
 
+    parser.add_argument(
+        '--center_in_first_state',
+        default=False,
+        action='store_true',
+        help='Whether to center the object in the first state.'
+    )
+
+    parser.add_argument(
+        '--fix_mot_maxksp_shot',
+        default=False,
+        action='store_true',
+        help='Whether to fix (not learn) the motion for the max ksp shot and set to gt for sim motion.'
+    )
+
+    parser.add_argument(
+        '--num_intraShot_events',
+        default=0,
+        type=int,
+        help='Number of intra-shot motion events.'
+    )
+
+    parser.add_argument(
+        '--TTT_sampTraj_simMot',
+        default='random_cartesian',
+        type=str,
+        choices=('random_cartesian', 'interleaved_cartesian_Ns500'),
+        help='Simulated sampling trajectory for TTT with simulated motion.'
+    )
+
+    parser.add_argument(
+        '--random_sampTraj_seed',
+        default=0,
+        type=int,
+        help='Random seed for random sampling trajectory.'
+    )
+
+    parser.add_argument(
+        '--sampling_order_path',
+        default=None,
+        type=str,
+        help='Path to sampling order for TTT.'
+    )
+
+
+
     return parser
 
 def get_TTT_args(parser):
@@ -348,6 +574,13 @@ def get_TTT_args(parser):
         action='store_true',
         help='Whether to only optimize over motion parameters in the motion corruption step.'
     )
+
+    # parser.add_argument(
+    #     '--TTT_separate_motion_est',
+    #     default=False,
+    #     action='store_true',
+    #     help='Whether to separate backpropagation in motion estimation for each motion state.'
+    # )
 
     parser.add_argument(
         '--TTT_motState_batchSize_per_backprop',
@@ -429,6 +662,91 @@ def get_TTT_args(parser):
         help='Decay learning rate at the latest after this many epochs.'
     )
 
+    parser.add_argument(
+        '--TTT_set_DCloss_lr',
+        default=False,
+        action='store_true',
+        help='Whether to set learning rate depending on DC loss is above threshold.'
+    )
+
+    parser.add_argument(
+        '--TTT_set_DCloss_lr_th',
+        default=0.65,
+        type=float,
+        help='Threshold for DC loss.'
+    )
+
+    parser.add_argument(
+        '--TTT_list_of_reset_steps',
+        default=[],
+        type=int,
+        nargs='+',
+        help='List of steps at which to reset motion parameters.'
+    )
+
+    parser.add_argument(
+        '--TTT_norm_per_shot',
+        default=False,
+        action='store_true',
+        help='Whether to normalize the loss per shot before adding up.'
+    )
+
+    parser.add_argument(
+        '--TTT_states_per_split',
+        default=2,
+        type=int,
+        help='Split a state in this number of new states.'
+    )
+
+    parser.add_argument(
+        '--TTT_list_of_split_steps',
+        default=[],
+        type=int,
+        nargs='+',
+        help='List of steps at which to split motion parameters.'
+    )
+
+    parser.add_argument(
+        '--TTT_all_states_grad_after_split',
+        default=False,
+        action='store_true',
+        help='Whether to optimize over all states after splitting.'
+    )
+
+    parser.add_argument(
+        '--TTT_lr_after_split',
+        default=1.0,
+        type=float,
+        help='Learning rate after splitting.'
+    )
+
+    parser.add_argument(
+        '--TTT_path_to_pred_motion_params',
+        default=None,
+        type=str,
+        help='Path to predicted motion parameters.'
+    )
+
+    parser.add_argument(
+        '--TTT_intraShot_estimation_only',
+        default=False,
+        action='store_true',
+        help='Whether to optimize only over intra-shot motion estimation.'
+    )
+
+    parser.add_argument(
+        '--TTT_optimize_all_states_after',
+        default=None,
+        type=int,
+        help='Optimize over all states after this many steps.'
+    )
+
+    parser.add_argument(
+        '--TTT_optimize_all_states_after_lr',
+        default=0.25,
+        type=float,
+        help='Learning rate for optimizing over all states during last steps (phase 3).'
+    )
 
     return parser
 
@@ -701,77 +1019,97 @@ def get_training_args(parser):
 def get_data_args(parser):
 
     parser.add_argument(
-        '--train_data_path',
-        default="",
+        '--train_data_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Train_converted_sliceDataset/"],
         type=str,
-        help='Path to training data.'
+        nargs='+',
+        help='List of paths to training data.'
     )
     parser.add_argument(
-        '--train_set_path',
-        default="",
+        '--train_set_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/slice_dataset_axial_sagittal_coronal_train_len23463.pickle"],
         type=str,
-        help='Path to pickel file with list of training data.'
+        nargs='+',
+        help='List of paths to pickel files with list of training data.'
     )
     parser.add_argument(
-        '--train_mask_path',
-        default="",
+        '--train_mask_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/mask_3D_size_218_170_256_test_R_5_file_e16362s3_P07168.pickle"],
         type=str,
-        help='Path to training mask.'
+        nargs='+',
+        help='List of paths to training mask.'
     )
     parser.add_argument(
-        '--train_sensmaps_path',
-        default="",
+        '--train_sensmaps_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Train_s_maps_3D/"],
         type=str,
-        help='Path to precomputed sensitivity maps.'
+        nargs='+',
+        help='List of paths to precomputed sensitivity maps.'
     )
 
     parser.add_argument(
-        '--val_data_path',
-        default="",
+        '--val_data_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Val_converted_sliceDataset/"],
         type=str,
-        help='Path to validation data.'
+        nargs='+',
+        help='List of paths to validation data.'
     )
     parser.add_argument(
-        '--val_set_path',
-        default="",
+        '--val_set_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/slice_dataset_vols5_axial10_sagittal10_coronal10_val_len150.pickle"],
         type=str,
-        help='Path to pickel file with list of validation data.'
+        nargs='+',
+        help='List of paths to pickel files with list of validation data.'
     )
     parser.add_argument(
-        '--val_mask_path',
-        default="",
+        '--val_mask_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/mask_3D_size_218_170_256_test_R_5_file_e16362s3_P07168.pickle"],
         type=str,
-        help='Path to validation mask.'
+        nargs='+',
+        help='List of paths to validation masks.'
     )
     parser.add_argument(
-        '--val_sensmaps_path',
-        default="",
+        '--val_sensmaps_paths',
+        default=["cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Val_s_maps_3D/"],
         type=str,
-        help='Path to precomputed sensitivity maps.'
+        nargs='+',
+        help='List of paths to precomputed sensitivity maps.'
     )
 
     parser.add_argument(
         '--TTT_example_path',
-        default="",
+        default="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Val_converted/e14583s3_P21504.7.h5",
         type=str,
         help='Path to the specific example we want to apply TTT to.'
     )
+    # parser.add_argument(
+    #     '--TTT_data_path',
+    #     default="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Val_converted/",
+    #     type=str,
+    #     help='Path to yaml file containing TTT data.'
+    # )
+    # parser.add_argument(
+    #     '--TTT_set_path',
+    #     default="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/",
+    #     type=str,
+    #     help='Path to pickel file with TTT data.'
+    # )
     parser.add_argument(
         '--TTT_mask_path',
-        default="",
+        default="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/mask_3D_size_218_170_256_test_R_5_file_e16362s3_P07168.pickle",
         type=str,
         help='Path to TTT mask.'
     )
     parser.add_argument(
         '--TTT_sensmaps_path',
-        default="",
+        default="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/Val_s_maps_3D/",
         type=str,
         help='Path to precomputed sensitivity maps.'
     )
 
     parser.add_argument(
         '--finalTestset_data_path',
-        default="",
+        default="cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/volume_dataset_freqEnc170_test_len10.pickle",
         type=str,
         help='Path to final test set data.'
     )
@@ -806,16 +1144,9 @@ def get_data_args(parser):
 
     parser.add_argument(
         '--data_drive',
-        default="",
+        default="/media/ssd3/",
         type=str,
         help='Path to data drive.'
-    )
-
-    parser.add_argument(
-        '--save_exp_results_path',
-        default="",
-        type=str,
-        help='Path to save experiment results.'
     )
 
     return parser

@@ -1,3 +1,16 @@
+"""
+Copyright (c) Facebook, Inc. and its affiliates.
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.
+"""
+
+"""
+Copyright (c) Facebook, Inc. and its affiliates.
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.
+"""
 
 from typing import List, Optional
 
@@ -5,6 +18,16 @@ import torch
 
 import numpy as np
 from typing import Tuple, Union
+
+def chunks(l, n):
+    """Yield n number of sequential chunks from l.
+    E.g. list(chunks([0,1,2,3,4,5,6],3)) -> [[0,1,2],[3,4],[5,6]]
+    
+    """
+    d, r = divmod(len(l), n)
+    for i in range(n):
+        si = (d+1)*(i if i < r else r) + d*(0 if i < r else i - r)
+        yield l[si:si+(d+1 if i < r else d)]
 
 def norm_to_gt(x: torch.Tensor, gt: torch.Tensor) -> torch.Tensor:
     """

@@ -3,13 +3,49 @@ import logging
 import torch
 from torch.utils.tensorboard import SummaryWriter
 
+def initialize_directories_TTT(args, TTT_fintune):
+
+    # # Path to load model used for TTT
+    args.experiment_path = os.path.join(args.data_drive,"cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/motion_MRI_TTT_results_tobit_kun/", args.experiment_name)
+
+    args.checkpoint_path = os.path.join(args.experiment_path, "checkpoints")
+
+    filename = args.TTT_example_path.split("/")[-1].split(".")[0]
+
+    if args.finalTestset:
+        args.TTT_results_path = os.path.join(args.experiment_path+"/finalTestset", f"TTT_results_{filename}"+args.experiment_name_TTT)
+    else:
+        args.TTT_results_path = os.path.join(args.experiment_path, f"{args.experiment_run_folder_name}TTT_results_{filename}"+args.experiment_name_TTT)
+    
+    os.makedirs(args.TTT_results_path, exist_ok=True)
+    args.TTT_log_path = os.path.join(args.TTT_results_path, "TTT_log.log")
+
+    args.TTT_results_path_numerical = os.path.join(args.TTT_results_path, "numerical")
+    os.makedirs(args.TTT_results_path_numerical, exist_ok=True)
+
+    if TTT_fintune:
+        args.TTT_results_path = os.path.join(args.TTT_results_path, f"TTT_finetune/{args.experiment_name_TTT_finetune}")
+
+        os.makedirs(args.TTT_results_path, exist_ok=True)
+        args.TTT_log_path = os.path.join(args.TTT_results_path, "TTT_log.log")
+
+        args.TTT_results_path_numerical = os.path.join(args.TTT_results_path, "numerical")
+        os.makedirs(args.TTT_results_path_numerical, exist_ok=True)
+
+    if args.alt_opt_on_TTTexp:
+        args.altopt_results_path = os.path.join(args.TTT_results_path,f"l1_recon/{args.experiment_name_alt_opt}")
+
+        os.makedirs(args.altopt_results_path, exist_ok=True)
+        args.altopt_log_path = os.path.join(args.altopt_results_path, "alt_opt_log.log")
+
+    return args
 
 
 def initialize_directories(args):
 
-    args.experiment_path = os.path.join(args.data_drive,args.save_exp_results_path, args.experiment_name)
+    args.experiment_path = os.path.join(args.data_drive,"cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/motion_MRI_TTT_results_tobit_kun/", args.experiment_name)
 
-    if args.TTT or args.train:
+    if args.TTT or args.train or args.modelTTT:
         if os.path.exists(args.experiment_path) and args.train and args.load_model_from_checkpoint == "None":
             raise Exception("Experiment path already exists, training is set true and no checkpoint for loading specified.")
 
@@ -23,7 +59,7 @@ def initialize_directories(args):
         os.makedirs(args.train_results_path, exist_ok=True)
         args.train_log_path = os.path.join(args.train_results_path, "train_log.log")
 
-    if args.TTT or args.alt_opt_on_TTTexp:
+    if args.TTT or args.modelTTT or args.alt_opt_on_TTTexp:
         filename = args.TTT_example_path.split("/")[-1].split(".")[0]
         if args.finalTestset:
             args.TTT_results_path = os.path.join(args.experiment_path+"/finalTestset", f"TTT_results_{filename}"+args.experiment_name_TTT)
@@ -36,13 +72,12 @@ def initialize_directories(args):
         args.TTT_results_path_numerical = os.path.join(args.TTT_results_path, "numerical")
         os.makedirs(args.TTT_results_path_numerical, exist_ok=True)
 
-
     if (args.alt_opt and not args.alt_opt_on_TTTexp) or args.alt_opt_on_alt_opt_exp:
         filename = args.TTT_example_path.split("/")[-1].split(".")[0]
         if args.finalTestset:
-            args.altopt_results_path = os.path.join(args.data_drive,args.save_exp_results_path+"finalTestset/", f"{filename}"+args.experiment_name_alt_opt)
+            args.altopt_results_path = os.path.join(args.data_drive,"cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/motion_MRI_TTT_results_tobit_kun/alt_opt_recons/finalTestset/", f"{filename}"+args.experiment_name_alt_opt)
         else:
-            args.altopt_results_path = os.path.join(args.data_drive,args.save_exp_results_path, f"{args.experiment_run_folder_name}{filename}"+args.experiment_name_alt_opt)
+            args.altopt_results_path = os.path.join(args.data_drive,"cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel/motion_MRI_TTT_results_tobit_kun/alt_opt_recons/", f"{args.experiment_run_folder_name}{filename}"+args.experiment_name_alt_opt)
         
         if args.alt_opt_on_alt_opt_exp:
             assert args.altopt_recon_only == True
@@ -51,6 +86,15 @@ def initialize_directories(args):
 
         os.makedirs(args.altopt_results_path, exist_ok=True)
         args.altopt_log_path = os.path.join(args.altopt_results_path, "alt_opt_log.log")
+
+    if args.modelTTT:
+        if args.modelTTT_gt_motion:
+            name_tag = "_gt_motion"
+        else:
+            name_tag = "_est_motion"
+        args.modelTTT_results_path = os.path.join(args.TTT_results_path, f"modelTTT{name_tag}" + args.experiment_name_modelTTT)
+        os.makedirs(args.modelTTT_results_path, exist_ok=True)
+        args.modelTTT_log_path = os.path.join(args.modelTTT_results_path, "modelTTT_log.log")
 
     if args.alt_opt_on_TTTexp:
         filename = args.TTT_example_path.split("/")[-1].split(".")[0]
@@ -82,6 +126,13 @@ def init_TTT(args):
 
     init_logging(args.TTT_log_path)
 
+def init_l1_recon(args):
+
+    init_logging(args.l1_log_path)
+
+def init_modelTTT(args):
+
+    init_logging(args.modelTTT_log_path)
 
 def init_alt_opt(args):
 

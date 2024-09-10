@@ -11,7 +11,7 @@ from functions.helpers.helpers_math import complex_abs, complex_mul, ifft2c_ndim
 from functions.helpers.helpers_log_save_image_utils import add_img_to_tensorboard, save_figure
 from functions.training.losses import SSIMLoss
 
-from functions.motion_simulation.motion_functions import motion_correction_NUFFT, generate_random_motion_params
+from functions.motion_simulation.motion_functions import motion_correction_NUFFT#, generate_random_motion_params
 from functions.motion_simulation.motion_functions import generate_interleaved_cartesian_trajectory, motion_corruption_NUFFT
 
 

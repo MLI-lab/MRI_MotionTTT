@@ -1,3 +1,10 @@
+"""
+Copyright (c) Facebook, Inc. and its affiliates.
+
+This source code is licensed under the MIT license found in the
+LICENSE file in the root directory of this source tree.
+"""
+
 from typing import Dict, NamedTuple, Optional, Sequence, Tuple, Union
 import numpy as np
 import torch
@@ -8,8 +15,6 @@ import os
 from functions.helpers.helpers_math import complex_abs, complex_conj, complex_mul, complex_abs_sq
 from functions.helpers.helpers_math import fft2c_ndim, ifft2c_ndim
 
-from functions.motion_simulation.motion_functions import motion_correction_NUFFT, generate_random_motion_params
-from functions.motion_simulation.motion_functions import generate_interleaved_cartesian_trajectory, motion_corruption_NUFFT
 
 
 #from functions.helpers.helpers_log_save_image_utils import save_figure
@@ -153,14 +158,14 @@ class UnetDataTransform_Volume_fixMask:
 
     def __init__(
         self,
-        mask: torch.Tensor,
+        loaded_masks_dict: Dict,
         args: Dict = None,
     ):
         """
         Args:
             mask: A fixed mask array
         """
-        self.mask = mask
+        self.loaded_masks_dict = loaded_masks_dict
         self.args = args
 
 
@@ -168,6 +173,7 @@ class UnetDataTransform_Volume_fixMask:
         self,
         kspace,
         sens_maps,
+        datasource,
     ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor, str, int]:
         """
         Args:
@@ -196,11 +202,34 @@ class UnetDataTransform_Volume_fixMask:
                     print(set[i].item())
                 raise ValueError("Warning: The real part of the sensitivity maps times their complex conjugate is not a binary mask!")
 
-        input_kspace = kspace * self.mask + 0.0
+        mask = self.loaded_masks_dict[datasource]
+        input_kspace = kspace * mask + 0.0
 
         target_img_3d = complex_mul(ifft2c_ndim(kspace, 3), sens_maps_conj).sum(dim=0, keepdim=False)
+        
+        # if self.args.train_use_nufft_adjoint:
+        #     #zero_motion_motionstates = torch.zeros(self.Ns-1, 6)
+        #     traj = generate_interleaved_cartesian_trajectory(self.args.Ns, self.mask, self.args)
 
-        return input_kspace, binary_background_mask, sens_maps_conj, target_img_3d, self.mask
+        #     input_nufft_img3D_coil = motion_correction_NUFFT(input_kspace, None, traj, weight_rot=True, args=self.args,
+        #                                                                  do_dcomp=self.args.train_use_nufft_with_dcomp, num_iters_dcomp=3)
+        #     input_img_3d = complex_mul(input_nufft_img3D_coil, sens_maps_conj).sum(dim=0, keepdim=False)
+        # else:
+        #     input_img_3d = complex_mul(ifft2c_ndim(input_kspace, 3), sens_maps_conj).sum(dim=0, keepdim=False)
+
+        # if args.train_on_motion_corrected_inputs:
+        #     traj = generate_interleaved_cartesian_trajectory(args.Ns, self.mask, args)
+        #     gt_motion_params = generate_random_motion_params(args.Ns-1, args.max_trans, args.max_rot, args.random_motion_seed).cuda(args.gpu)
+
+        #     masked_corrupted_kspace3D = motion_corruption_NUFFT(kspace, gt_motion_params, traj, weight_rot=True, args=args)
+
+        #     masked_corrected_img3D_coil = motion_correction_NUFFT(masked_corrupted_kspace3D, -1* gt_motion_params, traj, weight_rot=True, args=args)
+        #     masked_corrected_img3D = complex_mul(masked_corrected_img3D_coil, sens_maps_conj).sum(dim=0, keepdim=False)
+
+        # else:
+        #     masked_corrected_img3D = None
+
+        return input_kspace, binary_background_mask, sens_maps_conj, target_img_3d, mask
     
 
 

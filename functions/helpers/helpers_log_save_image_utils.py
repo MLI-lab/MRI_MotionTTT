@@ -9,16 +9,16 @@ import k3d
 from typing import Optional, Sequence, Tuple, Union
 from functions.helpers.helpers_math import complex_abs, center_crop
 
-def plot_dc_weights_over_epochs(save_path,meters_dc_weights):
+def print_gpu_memory_usage(self, step_index):
 
-    plt.figure()
-    for key, meter in meters_dc_weights.items():
-        plt.plot(meter.val, label=key)
-    plt.legend()
-    # add axis labels
-    plt.ylabel('dc weight')
-    plt.xlabel('epoch') 
-    plt.savefig(os.path.join(save_path, 'dc_weights_over_epochs.png'))
+        current_memory = torch.cuda.memory_allocated(self.args.gpu)  # device_id is the ID of your GPU
+        peak_memory = torch.cuda.max_memory_allocated(self.args.gpu)
+        current_memory_reserved = torch.cuda.memory_reserved(self.args.gpu)
+        peak_memory_reserved = torch.cuda.max_memory_reserved(self.args.gpu)
+        logging.info(f"{step_index} Current GPU memory usage: {current_memory / 1024**3} GB")
+        logging.info(f"{step_index} Peak GPU memory usage: {peak_memory / 1024**3} GB")
+        logging.info(f"{step_index} Current GPU memory reserved: {current_memory_reserved / 1024**3} GB")
+        logging.info(f"{step_index} Peak GPU memory reserved: {peak_memory_reserved / 1024**3} GB")
 
 def save_modelTTT_curves(name, save_path, modelTTT_meters_per_example, final_result_dict_modelTTT):
 
@@ -247,13 +247,7 @@ def save_slice_images_from_volume(volume, list_of_slices, save_path, volume_name
 
     if list_of_slices is None:
         list_of_slices = [(0, volume.shape[0]//2), (1, volume.shape[1]//2), (2, volume.shape[2]//2)]
-        # list_of_slices = [(0, volume.shape[0]//2), (1, volume.shape[1]//2), (2, volume.shape[2]//2),
-        #                   (0, volume.shape[0]//4), (1, volume.shape[1]//4), (2, volume.shape[2]//4),
-        #                   (0, volume.shape[0]//4*3), (1, volume.shape[1]//4*3), (2, volume.shape[2]//4*3),
-        #                   (0,0), (0,1), (0,2), (0,volume.shape[0]-1), (0,volume.shape[0]-2), (0,volume.shape[0]-3),
-        #                   (1,0), (1,1), (1,2), (1,volume.shape[1]-1), (1,volume.shape[1]-2), (1,volume.shape[1]-3),
-        #                   (2,0), (2,1), (2,2), (2,volume.shape[2]-1), (2,volume.shape[2]-2), (2,volume.shape[2]-3)]
-
+        
     for slice in list_of_slices:
         axis = slice[0]
         slice_index = slice[1]
@@ -312,13 +306,14 @@ def save_masks_from_motion_sampling_trajectories(traj, mask2d, save_path, num_st
 
     # Create folder for saving images
     save_path = os.path.join(save_path, dir_name)
-    if not os.path.exists(save_path):
+    if save_figures and not os.path.exists(save_path):
         os.makedirs(save_path)
-
+        
     if num_states_to_save is None:
         num_states_to_save = len(traj[0])+1
 
-    save_figure_original_resolution(mask2d, save_path, "mask2d_phase_slice_encoding")
+    if save_figures:
+        save_figure_original_resolution(mask2d, save_path, "mask2d_phase_slice_encoding")
 
     # masks2D_all_states has shape (num_states_to_save, 1 (coil dim), 
     # mask2d.shape[0], mask2d.shape[1], 1 (broadcast freq dim), 1 (comlex dim))

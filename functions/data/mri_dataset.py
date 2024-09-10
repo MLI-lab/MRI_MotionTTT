@@ -208,8 +208,8 @@ class VolumeDataset(torch.utils.data.Dataset):
 
     def __init__(
         self,
-        dataset: str,
-        data_path: str,
+        datasets: str,
+        data_paths: str,
         path_to_sensmaps: str,
         args,
         transform: Optional[Callable] = None,
@@ -228,22 +228,29 @@ class VolumeDataset(torch.utils.data.Dataset):
             num_samples: Optional; The number of samples to load from the dataset.
         """
         
-        self.dataset = dataset
+        self.datasets = datasets
         self.path_to_sensmaps = path_to_sensmaps
-        self.data_path = data_path
+        self.data_paths = data_paths
         self.args = args
         self.num_samples = num_samples
         self.transform = transform
 
         self.examples = []
 
-        with open(os.path.join(args.data_drive, dataset),'rb') as fn:
-            examples_list_of_dicts = pickle.load(fn)
+        for dataset in datasets:
+            
+            with open(os.path.join(args.data_drive, dataset),'rb') as fn:
+                examples_list_of_dicts = pickle.load(fn)
 
-        for example in examples_list_of_dicts:
-            filepath = os.path.join(args.data_drive,data_path,example["filename"])
-            filename = example["filename"]
-            self.examples.append((filepath, filename))
+            for example in examples_list_of_dicts:
+                datasource = example["datasouce"]
+                datatype = example["datatype"]
+                filename = example["filename"]
+                data_path = data_paths[datasource]
+                
+                filepath = os.path.join(args.data_drive,data_path,filename)
+                
+                self.examples.append((filepath, filename, datasource, datatype))
 
         # Take a subset of the datasets for fast trouble shooting
         if num_samples == None: 
@@ -256,9 +263,11 @@ class VolumeDataset(torch.utils.data.Dataset):
 
     def __getitem__(self, i: int): 
 
-        filepath, filename = self.examples[i]
+        filepath, filename, datasource, datatype = self.examples[i]
 
-        smap_file = os.path.join(self.args.data_drive, self.path_to_sensmaps, "smaps_"+filename)
+        path_to_sensmaps = self.path_to_sensmaps[datasource]
+
+        smap_file = os.path.join(self.args.data_drive, path_to_sensmaps, "smaps_"+filename)
         with h5py.File(smap_file, 'r') as hf:
             sens_maps_3D = hf['smaps'][()]
     
@@ -267,7 +276,7 @@ class VolumeDataset(torch.utils.data.Dataset):
 
         kspace_3D = torch.from_numpy(kspace_3D)
         sens_maps_3D = torch.from_numpy(sens_maps_3D)
-        input_kspace, binary_background_mask_3D, sens_maps_conj_3D, target_img_3D, mask3D = self.transform(kspace_3D, sens_maps_3D)
+        input_kspace, binary_background_mask_3D, sens_maps_conj_3D, target_img_3D, mask3D = self.transform(kspace_3D, sens_maps_3D, datasource)
 
         # for ax_ind, batch_size in enumerate(self.args.train_batch_size_per_axis):
         #     if batch_size:
