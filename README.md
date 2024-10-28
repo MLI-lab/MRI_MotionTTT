@@ -11,7 +11,7 @@ conda activate MotionTTT_env
 ```
 CUDA-enabled GPU is necessary to run the code. You should install a version of `PyTorch` that is compatible with your `CUDA` version. You can find a list of all `PyTorch` versions and the compatible `CUDA` versions [here](https://pytorch.org/get-started/previous-versions/). We tested MotionTTT with
 ```
-conda install pytorch==2.2.0 pytorch-cuda=11.8 -c pytorch -c nvidia
+conda install pytorch==2.3.0 torchvision torchaudio pytorch-cuda=11.8 -c pytorch -c nvidia
 ```
 The remaining requirements can be istalled via
 ```
