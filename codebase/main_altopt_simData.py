@@ -118,6 +118,10 @@ if __name__ == '__main__':
 
                         args.experiment_name_alt_opt= f"_rottrans{max_mot}_Ns{Ns}_motEvents{num_motion_events}_motSeed{random_motion_seed}"
 
+                        # Args for the early stopping:
+                        args.is_altopt_threshold = True
+                        args.altopt_threshold = 13
+
                         # initialize experiment, create directories
                         args = initialize_directories(args, results_path = path_to_result_dir+"/"+results_dir+"/")
 

@@ -154,6 +154,20 @@ def get_alt_opt_args(parser):
     )
 
     parser.add_argument(
+        '--is_altopt_threshold',
+        default=False,
+        type=bool,
+        help='Whether using the early stopping for the altopt baseline'
+    )
+
+    parser.add_argument(
+        '--altopt_threshold',
+        default=13,
+        type=float,
+        help='Threshold for the early stopping.(in log scale)'
+    )
+
+    parser.add_argument(
         '--alt_opt',
         default=False,
         action='store_true',

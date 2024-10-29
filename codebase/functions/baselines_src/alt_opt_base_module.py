@@ -139,7 +139,16 @@ class AltOptModuleBase():
                     self.evaluate_after_motion_step(pred_motion_params.detach(), traj, loss_motion.item(), iteration, motion_step, total_steps)
 
                 optimizer_motion.zero_grad()
-
+            #  Thresholding
+            if self.args.is_altopt_threshold:
+                if iteration == 0:
+                    last_loss_recon = loss_recon.item()
+                else:
+                    if ((np.log(last_loss_recon-loss_recon.item())<self.args.altopt_threshold) and ((last_loss_recon-loss_recon.item())>0)) and (iteration>30):
+                        break
+                    else:
+                        last_loss_recon = loss_recon.item()
+                        
         self.evaluate_after_alt_opt(traj)
 
     
