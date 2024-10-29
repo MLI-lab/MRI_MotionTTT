@@ -114,19 +114,29 @@ class UnetTTTModuleBase():
                     self.Ns_list_after_split = []
                     for i in range(len(traj[0])):
                         if i in dc_th_states_ind:
-                            # set pred_motion_params in the split states to the average of last and next state that are not split states
+                            # set pred_motion_params in the split states to the average 
+                            # of last and next state that are not split states.
                             if i == 0:
                                 # use motion parameters of next state that is not in dc_th_states_ind
-                                j=i+1
-                                while j in dc_th_states_ind:
-                                    j += 1
-                                pred_motion_params_split[i:i+self.args.TTT_states_per_split,:] = pred_motion_params.data[j]
+                                next_state=i+1
+                                while next_state in dc_th_states_ind:
+                                    next_state += 1
+                                if next_state >= len(traj[0]):
+                                    pred_motion_params_split[i:i+self.args.TTT_states_per_split,:] = 0
+                                else:
+                                    pred_motion_params_split[i:i+self.args.TTT_states_per_split,:] = pred_motion_params.data[next_state]
+                                i_offset += self.args.TTT_states_per_split-1
+
                             elif i == len(traj[0])-1:
                                 # use motion parameters of last state that is not in dc_th_states_ind
-                                j=i-1
-                                while j in dc_th_states_ind:
-                                    j -= 1
-                                pred_motion_params_split[i:i+self.args.TTT_states_per_split,:] = pred_motion_params.data[j]
+                                last_state=i-1
+                                while last_state in dc_th_states_ind:
+                                    last_state -= 1
+                                if last_state < 0:
+                                    pred_motion_params_split[i+i_offset:i+i_offset+self.args.TTT_states_per_split,:] = 0
+                                else:
+                                    pred_motion_params_split[i+i_offset:i+i_offset+self.args.TTT_states_per_split,:] = pred_motion_params.data[last_state]
+
                             else:
                                 last_state = i-1
                                 while last_state in dc_th_states_ind:
