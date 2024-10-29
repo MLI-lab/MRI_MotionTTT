@@ -77,7 +77,7 @@ if __name__ == '__main__':
 
     args = get_args()
 
-    data_drive= "/media/ssd1/"
+    data_drive= "/media/ssd0/"
     path_to_data = f"{data_drive}cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel"
     path_to_result_dir = f"{data_drive}cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel"
     results_dir = "motion_MRI_TTT_results_tobit_kun"
@@ -114,7 +114,7 @@ if __name__ == '__main__':
 
     # # Train model
     args.train = True
-    args.test_run = True
+    args.test_run = False
 
     # # Training arguments
     args.lr = 0.001

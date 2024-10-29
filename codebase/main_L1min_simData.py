@@ -13,7 +13,7 @@ if __name__ == '__main__':
 
     args = get_args()
 
-    data_drive= "/media/ssd3/"
+    data_drive= "/media/ssd0/"
 
     path_to_data = f"{data_drive}cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel"
     results_dir = "L1min_recons" # 'alt_opt_recons', 'L1min_recons', 'E015_unet48_PmaskR4_lr001_joint_nufftAdjoint_with_dcomp'
@@ -40,8 +40,7 @@ if __name__ == '__main__':
                         args.sensmaps_path = f"{path_to_data}/Val_s_maps_3D/smaps_{filename}"
                         
                         # Set device index
-                        args.gpu= 3
-
+                        args.gpu= 0
                         # Run L1-minimization
                         args.L1min=True
                         args.L1min_vivo=False # L1min also needs to be True

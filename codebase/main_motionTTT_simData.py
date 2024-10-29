@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
     args = get_args()
 
-    data_drive= "/media/ssd1/"
+    data_drive= "/media/ssd0/"
 
     path_to_data = f"{data_drive}cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel"
     results_dir = "E015_unet48_PmaskR4_lr001_joint_nufftAdjoint_with_dcomp"
@@ -97,7 +97,7 @@ if __name__ == '__main__':
                             args.seed = 1
 
                             # Give an additional name for a folder that then contains a set of experiments
-                            args.experiment_run_folder_name = "val_playground_3/"
+                            args.experiment_run_folder_name = "val_playground_4/"
 
                             # # Model arguments to load a pre-trained model
                             # Load a local model:
