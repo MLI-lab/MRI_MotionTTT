@@ -21,7 +21,7 @@ pip install -r requirements.txt
 ## Usage
 
 ### Data preparation
-For both pre-training on motion-free 2D slices and testing our method on 3D volumes with simulated motion parameters we use the data provided in the training and validation set of the [Calgary Campinas Brain MRI Dataset (CC59)](https://portal.conp.ca/dataset?id=projects/calgary-campinas#) [1].
+For pre-training on motion-free 2D slices and testing our method on 3D volumes with simulated motion parameters we use the data provided in the training and validation set of the [Calgary Campinas Brain MRI Dataset (CC59)](https://portal.conp.ca/dataset?id=projects/calgary-campinas#) [1].
 
 Start by downloading the CC359 datset. As the data comes in a hybrid k-space format run `prepare_CC359_dataset.ipynb` to create a converted version of the train and validation set consisting of 3D k-space data and to compute and store the 3D sensitivity maps using the [bart toolbox](https://mrirecon.github.io/bart/). 
 
@@ -37,10 +37,22 @@ In `codebase/` you can find scripts to replicate the results from the paper incl
 - `main_train_stackedUnet_motionCorrection.py` our implementation of stacked U-nets with self-assisted priors [3] to obtain the baseline results for end-to-end 3D motion correction.
 
 ## Contact
-If you have any questions or problems, or if you found a bug in the code, please do not hesitate to [contact us](mailto:tobit.klug@tum.de) or to open an issue on GitHub.
+
+If you have any questions or problems, or if you found a bug in the code, please open an issue on GitHub or contact us.
 
 
-## Reference
+## How to cite this work
+
+ @inproceedings{
+    Klug_Wang_Ruschke_Heckel_2024,
+    title={MotionTTT: 2D Test-Time-Training Motion Estimation for 3D Motion Corrected MRI},
+    booktitle={Conference on Neural Information Processing Systems},
+    author={Klug, Tobit and Wang, Kun and Ruschke, Stefan and Heckel, Reinhard}, 
+    year={2024} 
+}
+
+
+## References
 - [1] Souza et al.  "An Open, Multi-Vendor, Multi-Field-Strength Brain MR Dataset and Analysis of Publicly Available Skull Stripping Methods Agreement". In: *NeuroImage* (2018).
 - [2] Cordero-Grande et al. "Sensitivity Encoding for Aligned Multishot Magnetic Resonance Reconstruction". In: *IEEE Transactions on Computational Imaging* (2016).
 - [3] Al-Masni et al. "Stacked U-Nets with Self-Assisted Priors towards Robust Correction of Rigid Motion Artifact in Brain MRI". In: *NeuroImage* (2022).
