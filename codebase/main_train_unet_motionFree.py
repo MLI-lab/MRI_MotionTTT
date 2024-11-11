@@ -77,10 +77,10 @@ if __name__ == '__main__':
 
     args = get_args()
 
-    data_drive= "/media/ssd0/"
+    data_drive= "/media/ssd3/"
     path_to_data = f"{data_drive}cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel"
     path_to_result_dir = f"{data_drive}cc-359_raw/calgary-campinas_version-1.0/CC359/Raw-data/Multi-channel/12-channel"
-    results_dir = "motion_MRI_TTT_results_tobit_kun"
+    results_dir = "motion_MRI_results"
 
     # The training code potentially allows to train on multiple datasets.
     args.train_set_paths = [
@@ -110,7 +110,7 @@ if __name__ == '__main__':
         }
     
     # Set device index
-    args.gpu= 0
+    args.gpu= 2
 
     # # Train model
     args.train = True
