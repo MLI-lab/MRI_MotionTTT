@@ -23,7 +23,7 @@ pip install -r requirements.txt
 ### Data preparation
 For pre-training on motion-free 2D slices and testing our method on 3D volumes with simulated motion parameters we use the data provided in the training and validation set of the [Calgary Campinas Brain MRI Dataset (CC59)](https://portal.conp.ca/dataset?id=projects/calgary-campinas#) [1].
 
-Start by downloading the CC359 datset. As the data comes in a hybrid k-space format run `prepare_CC359_dataset.ipynb` to create a converted version of the train and validation set consisting of 3D k-space data and to compute and store the 3D sensitivity maps using the [bart toolbox](https://mrirecon.github.io/bart/). 
+Start by downloading the CC359 datset. As the data comes in a hybrid k-space format run `prepare_CC359_dataset.py` to create a converted version of the train and validation set consisting of 3D k-space data and to compute and store the 3D sensitivity maps using the [bart toolbox](https://mrirecon.github.io/bart/). 
 
 ### MotionTTT tutorial
 The notebook `run_motionTTT_on_CC359_example.ipynb` demonstrates how to use our codebase to apply MotionTTT to an example from the CC359 validation set with a simulated motion and sampling trajectory using our pre-trained U-net from https://huggingface.co/mli-lab/Unet48-2D-CC359.
@@ -36,6 +36,12 @@ In `codebase/` you can find scripts to replicate the results from the paper incl
 - `main_altopt_simData.py` our implementation of the idea in [2] to obtain the baseline results for alternating optimization motion estimation and reconstruction,
 - `main_train_stackedUnet_motionCorrection.py` our implementation of stacked U-nets with self-assisted priors [3] to obtain the baseline results for end-to-end 3D motion correction.
 
+Run any of those scripts as, e.g.,
+```
+cd codespace
+python main_motionTTT_simData.py
+```
+
 ## Contact
 
 If you have any questions or problems, or if you found a bug in the code, please open an issue on GitHub or contact us.
@@ -43,12 +49,12 @@ If you have any questions or problems, or if you found a bug in the code, please
 
 ## How to cite this work
 
- @inproceedings{
-    Klug_Wang_Ruschke_Heckel_2024,
-    title={MotionTTT: 2D Test-Time-Training Motion Estimation for 3D Motion Corrected MRI},
-    booktitle={Conference on Neural Information Processing Systems},
-    author={Klug, Tobit and Wang, Kun and Ruschke, Stefan and Heckel, Reinhard}, 
-    year={2024} 
+ @inproceedings{  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Klug_Wang_Ruschke_Heckel_2024,  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; title={MotionTTT: 2D Test-Time-Training Motion Estimation for 3D Motion Corrected MRI},  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; booktitle={Conference on Neural Information Processing Systems},  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; author={Klug, Tobit and Wang, Kun and Ruschke, Stefan and Heckel, Reinhard},  
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; year={2024}  
 }
 
 
