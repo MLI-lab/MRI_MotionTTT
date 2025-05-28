@@ -47,8 +47,7 @@ We also support inference on the [PMoC3D](https://huggingface.co/datasets/mli-la
 
 **Step 1: Crop PMoC3D Data**
 
-To reduce the computational cost for evaluating
-experiments, we also cropped the data along the fully-sampled read-out dimension to the size of the field of view (256). You can use the following command to crop the data:
+To reduce the computational cost, we also cropped the data along the fully-sampled read-out dimension. You can use the following command to crop the data:
 ```bash
 python crop_PMoC3D_dataset.py \
   --pmoC3d_root /path/to/PMoC3D \
