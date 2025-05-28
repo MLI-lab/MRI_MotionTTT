@@ -43,7 +43,7 @@ python main_motionTTT_simData.py
 ```
 
 ## vivo Data Usage
-We also provide the program run on the [PMoC3D](https://huggingface.co/datasets/mli-lab/PMoC3D) dataset, a real-world dataset consisting of paired motion-corrupted 3D brain MRI data.
+We also support inference on the [PMoC3D](https://huggingface.co/datasets/mli-lab/PMoC3D) dataset, a real-world dataset consisting of paired motion-corrupted 3D brain MRI data.
 
 **Step 1: Crop PMoC3D Data**
 
