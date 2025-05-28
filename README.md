@@ -42,6 +42,34 @@ cd codespace
 python main_motionTTT_simData.py
 ```
 
+## vivo Data Usage
+We also provide the program run on the [PMoC3D](https://huggingface.co/datasets/mli-lab/PMoC3D) dataset, a real-world dataset consisting of paired motion-corrupted 3D brain MRI data.
+
+**Step 1: Crop PMoC3D Data**
+
+To reduce the computational cost for evaluating
+experiments, we also cropped the data along the fully-sampled read-out dimension to the size of the field of view (256). You can use the following command to crop the data:
+```bash
+python crop_PMoC3D_dataset.py \
+  --pmoC3d_root /path/to/PMoC3D \
+  --gpu 3 \
+  [--save_path /path/to/output]
+```
+
+- `--pmoC3d_root` (required): Root directory of the downloaded PMoC3D dataset.
+- `--gpu` (required): CUDA device ID to use.
+- `--save_path` (optional): Output directory for the cropped data.  
+  Defaults to `PMoC3D_root/derivatives/cropped_data`.
+
+
+**Step 2: Running baselines on PMoC3D**
+
+We support the MotionTTT, AltOpt, and stacked U-net running on the vivo data, an example using MotionTTT is:
+```bash
+cd codespace
+python main_motionTTT_vivoData.py
+```
+
 ## Contact
 
 If you have any questions or problems, or if you found a bug in the code, please open an issue on GitHub or contact us.
