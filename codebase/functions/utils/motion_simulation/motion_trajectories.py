@@ -19,6 +19,19 @@ def sim_motion_get_gt_motion_traj(args, traj, verbose=True):
             traj_updated[1].extend([np.array([k]) for k in traj[1][i]])
 
         intraShot_event_inds = None
+    elif args.motionTraj_simMot == "uniform_interShot_event_model_simreal":
+        logging.info(f"Generate inter-shot random motion parameters with seed {args.random_motion_seed}, motion states {args.Ns}, number of shots {args.num_shots}, max translation/rotation {args.max_trans}/{args.max_rot}, num motion events {args.num_motion_events}") if verbose else None
+        gt_motion_params = gen_motion_params_simreal(args.Ns, args.num_motion_events, args.main_mot_range, args.perturb_mot_range,args.random_motion_seed)
+                        
+        gt_motion_params,_,_ = expand_mps_to_kspline_resolution(gt_motion_params, traj, list_of_track_dc_losses=None)
+
+        traj_updated = ([np.array([k]) for k in traj[0][0]], [np.array([k]) for k in traj[1][0]])
+        for i in torch.arange(1,args.Ns):
+            # For each shot expand the traj to per line resolution
+            traj_updated[0].extend([np.array([k]) for k in traj[0][i]])
+            traj_updated[1].extend([np.array([k]) for k in traj[1][i]])
+
+        intraShot_event_inds = None
     elif args.motionTraj_simMot == "uniform_intraShot_event_model":
         logging.info(f"Generate intra-shot random motion parameters with seed {args.random_motion_seed}, motion states {args.Ns}, number of shots {args.num_shots}, max translation/rotation {args.max_trans}/{args.max_rot}, num motion events {args.num_motion_events}, num intraShot events {args.num_intraShot_events}") if verbose else None
         gt_motion_params, traj_updated, intraShot_event_inds = gen_rand_mot_params_intraShot(args.Ns, args.max_trans, args.max_rot, 
@@ -31,6 +44,73 @@ def sim_motion_get_gt_motion_traj(args, traj, verbose=True):
 
     return gt_motion_params.cuda(args.gpu), traj_updated, intraShot_event_inds
 
+def sample_non_adjacent_numbers(n=3, total=52, min_gap=4):
+    while True:
+        nums = torch.randperm(total-min_gap)[:n]
+        sorted_nums = nums.sort()[0]
+        if all((sorted_nums[i+1] - sorted_nums[i]) >= min_gap for i in range(n - 1)):
+            return sorted_nums
+
+def gen_motion_params_simreal(Ns, num_events, main_mot_range, perturb_mot_range,seed):
+    """
+    Generate motion parameters for a given number of events and severity.
+    Args:
+        Ns (int): Number of shots.
+        num_events (int): Number of motion events.
+        main_mot_range (float): Main motion range.
+        perturb_mot_range (float): Perturbation motion range.
+    Returns:
+        motion_params (torch.Tensor): Generated motion parameters.
+    """
+    torch.manual_seed(seed)
+    # Define the instruction list:
+    instruction_list = ["nod","shake","turn_left_right_stay","turn_left_right_return","chin_down_stay","chin_down_return"]
+    max_instruction_shot = 4
+    motion_params = torch.zeros(Ns, 6)
+    # Randomly pick which states will trigger an event (excluding the very first one for variety)
+    event_start_shots = sample_non_adjacent_numbers(num_events,Ns,max_instruction_shot)
+
+    for i in range(num_events):
+        # Perturbations on other motion parameters:
+        if i == len(event_start_shots)-1:
+            motion_params[event_start_shots[i]:,[0, 1, 2, 5]] = torch.rand(4) * 2 * perturb_mot_range - perturb_mot_range
+        else:
+            motion_params[event_start_shots[i]:event_start_shots[i+1],[0, 1, 2, 5]] = torch.rand(4) * 2 * perturb_mot_range - perturb_mot_range
+        # Main motion parameters:
+        picked_instruction = instruction_list[torch.randint(0, len(instruction_list), (1,)).item()]
+        # picked_instruction = "chin_down_return"
+        # print(picked_instruction)
+        if picked_instruction == "nodding":
+            motion_params[event_start_shots[i], 4] = 0
+            motion_params[event_start_shots[i]+1, 4] = -1 * torch.rand(1) * main_mot_range
+            motion_params[event_start_shots[i]+2, 4] = torch.rand(1) * main_mot_range
+            motion_params[event_start_shots[i]+3, 4] = 0
+        elif picked_instruction == "shake":
+            motion_params[event_start_shots[i], 3] = 0
+            motion_params[event_start_shots[i]+1, 3] = -1 * torch.rand(1) * main_mot_range
+            motion_params[event_start_shots[i]+2, 3] = torch.rand(1) * main_mot_range
+            motion_params[event_start_shots[i]+3, 3] = 0
+        elif picked_instruction == "turn_left_right_stay":
+            motion_params[event_start_shots[i], 3] = 0
+            if i == len(event_start_shots)-1:
+                motion_params[event_start_shots[i]+1:, 3] = torch.rand(1) * 2 * main_mot_range - main_mot_range
+            else:
+                motion_params[event_start_shots[i]+1:event_start_shots[i+1]:, 3] = torch.rand(1) * 2 * main_mot_range - main_mot_range
+        elif picked_instruction == "turn_left_right_return":
+            motion_params[event_start_shots[i], 3] = 0
+            motion_params[event_start_shots[i]+1, 3] = torch.rand(1) * 2 * main_mot_range - main_mot_range
+            motion_params[event_start_shots[i]+2, 3] = 0
+        elif picked_instruction == "chin_down_stay":
+            motion_params[event_start_shots[i], 4] = 0
+            if i == len(event_start_shots)-1:
+                motion_params[event_start_shots[i]+1:, 4] = torch.rand(1) * 2 * main_mot_range - main_mot_range
+            else:
+                motion_params[event_start_shots[i]+1:event_start_shots[i+1]:, 4] = torch.rand(1) * 2 * main_mot_range - main_mot_range
+        elif picked_instruction == "chin_down_return":
+            motion_params[event_start_shots[i], 4] = 0
+            motion_params[event_start_shots[i]+1, 4] = torch.rand(1) * 2 * main_mot_range - main_mot_range
+            motion_params[event_start_shots[i]+2, 4] = 0
+    return motion_params
 
 def gen_rand_mot_params_interShot(Ns, max_trans, max_rot, seed, num_events, num_shots):
     '''
