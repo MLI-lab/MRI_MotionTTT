@@ -3,6 +3,9 @@ import os
 from argparse import ArgumentParser
 import logging
 import torch
+from huggingface_hub import hf_hub_download
+from safetensors.torch import load_file
+from functions.utils.models.stackedUnet import StackedUnet
 
 from functions.utils.helpers.helpers_getargs import get_args
 from functions.utils.helpers.helpers_init import init_logging
@@ -50,13 +53,23 @@ if __name__ == '__main__':
     args.pools = 4
     
     # Load a local model:
-    args.load_model_path= 'None'
-    args.load_model_from_huggingface = "mli-lab/Unet48-2D-CC359"
+    args.load_model_path= None
+    args.load_model_from_huggingface = "mli-lab/StackedUnet64-2D-CC359-MildSimMotion-v1.0"
 
-    model, _, _, _ = get_model(args)
-    model.eval()
+    # model, _, _, _ = get_model(args)
+    # model.eval()
+    if args.load_model_from_huggingface is not None:
+        weights_path = hf_hub_download(
+            repo_id=args.load_model_from_huggingface,
+            filename="model.safetensors"
+        )
+        state_dict = load_file(weights_path)
+        model = StackedUnet(unet_num_ch_first_layer=64,norm_type="instance")
+        model.load_state_dict(state_dict)
+        model.to(f"cuda:{args.gpu}")
+        model.eval()
 
-    # # Define train_module to access the val_step() function
+    # Define train_module to access the val_step() function
     if args.model == "unet":
         train_module = UnetTrainModule(args, train_loader=None, val_loader=None, model=model, optimizer=None, scheduler=None, train_loss_function=None, tb_writer=None)
     elif args.model == "stackedUnet":
@@ -69,7 +82,7 @@ if __name__ == '__main__':
             args.example_path = os.path.join(path_to_data,f'sub-0{sub_ind}',f'sub-0{sub_ind}_run-0{scan_ind}_kspace.h5')
             args.sensmaps_path = os.path.join(path_to_data,f'sub-0{sub_ind}',f'sub-0{sub_ind}_smaps.h5')
             # Give an additional name for a folder that then contains a set of experiments
-            args.experiment_run_folder_name = f"vivo_{sub_ind}/"
+            args.experiment_run_folder_name = f"sub-0{sub_ind}/"
 
             # # Init logging
 

@@ -8,7 +8,6 @@ from functions.utils.helpers.helpers_math import complex_abs, normalize_separate
 from functions.pre_training_src.train_base_module import TrainModuleBase
 
 
-
 class StackedUnetTrainModule(TrainModuleBase):
     def __init__(
             self,
@@ -28,6 +27,8 @@ class StackedUnetTrainModule(TrainModuleBase):
     def train_step(self, input_img_3D, input_cor_img3D, input_corMild_img3D, sens_maps_3D, target_img_3D, target_kspace_3D, binary_background_mask_3D, rec_id, rec_id_cor, rec_id_corMild, ax_ind):
         target_kspace_2D = None
         sens_maps_2D = None
+
+        data_range = torch.max(complex_abs(target_img_3D)).cuda(self.args.gpu).repeat(self.args.batch_size)
 
         # select slices
         if self.args.train_on_motion_free_inputs:
@@ -139,8 +140,12 @@ class StackedUnetTrainModule(TrainModuleBase):
             
 
             recon_kspace_full = None
-
-            loss, loss_img, loss_ksp = self.train_loss_function(target_kspace_2D, recon_kspace_full, target_image_2D[start:end], recon_image_full_1c)
+            if self.args.train_loss == "ssim":
+                loss_img = self.ssim_loss(recon_image_full_1c, target_image_2D[start:end], data_range=data_range)
+                loss_ksp = torch.tensor(0.0)
+                loss = loss_img
+            else:
+                loss, loss_img, loss_ksp = self.train_loss_function(target_kspace_2D, recon_kspace_full, target_image_2D[start:end], recon_image_full_1c)
 
             if math.isnan(loss.item()):
                 print("Nan loss encountered.")
@@ -172,7 +177,7 @@ class StackedUnetTrainModule(TrainModuleBase):
         return recon_image_fg_1c[:,:,:,0], target_image_2D[start:end], input_img_2D[start:end], loss_tot, loss_img_tot, loss_ksp_tot
     
 
-    def val_step(self, input_img_2D, binary_background_mask_2D):
+    def val_step(self, input_img_2D, binary_background_mask_2D, batch_size=None):
         input_img_2D = complex_abs(input_img_2D).unsqueeze(1)
         input_img_2D_next = input_img_2D[1:]
         input_img_2D_next = torch.cat([input_img_2D_next, input_img_2D_next[-1].unsqueeze(0)], dim=0)
@@ -182,8 +187,21 @@ class StackedUnetTrainModule(TrainModuleBase):
         model_inputs_img_full_2c_norm, mean, std = normalize_separate_over_ch(input_img_2D, eps=1e-11)
         model_inputs_img_full_2c_norm_next, _, _ = normalize_separate_over_ch(input_img_2D_next, eps=1e-11)
         model_inputs_img_full_2c_norm_prev, _, _ = normalize_separate_over_ch(input_img_2D_prev, eps=1e-11)
+        del input_img_2D, input_img_2D_next, input_img_2D_prev
 
-        recon_image_full_1c = self.model(model_inputs_img_full_2c_norm_prev, model_inputs_img_full_2c_norm, model_inputs_img_full_2c_norm_next)
+
+        if batch_size:        
+            # pass inputs through the model in batches
+            recon_image_full_1c = torch.zeros_like(model_inputs_img_full_2c_norm)
+            num_batches = int(np.ceil(model_inputs_img_full_2c_norm.shape[0] / batch_size))
+
+
+            for i in range(num_batches):
+                start = i * batch_size
+                end = min((i + 1) * batch_size, model_inputs_img_full_2c_norm.shape[0])
+                recon_image_full_1c[start:end] = self.model(model_inputs_img_full_2c_norm_prev[start:end], model_inputs_img_full_2c_norm[start:end], model_inputs_img_full_2c_norm_next[start:end])
+        else:
+            recon_image_full_1c = self.model(model_inputs_img_full_2c_norm_prev, model_inputs_img_full_2c_norm, model_inputs_img_full_2c_norm_next)
         recon_image_full_1c = recon_image_full_1c * std + mean
         recon_image_full_1c = torch.moveaxis(recon_image_full_1c, 1, -1)                    # (batch, x, y, ch)
 

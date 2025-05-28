@@ -69,7 +69,7 @@ if __name__ == '__main__':
             args.example_path = os.path.join(path_to_data,f'sub-0{sub_ind}',f'sub-0{sub_ind}_run-0{scan_ind}_kspace.h5')
             args.sensmaps_path = os.path.join(path_to_data,f'sub-0{sub_ind}',f'sub-0{sub_ind}_smaps.h5')
             # Give an additional name for a folder that then contains a set of experiments
-            args.experiment_run_folder_name = f"vivo_{sub_ind}/"
+            args.experiment_run_folder_name = f"sub-0{sub_ind}/"
 
             # Set device index
             args.gpu= 3

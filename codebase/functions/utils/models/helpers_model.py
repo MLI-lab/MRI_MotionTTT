@@ -19,17 +19,18 @@ class MyModel(
     def __init__(self):
         super().__init__(in_chans = 2, out_chans=2, chans = 48, num_pool_layers = 4)
 
-def get_model(args):
-
-
+def get_model(args, verbose = True):
+    
     if args.model == "unet":
-        logging.info(f"Using standard 2D Unet model.")
+        if verbose:
+            logging.info(f"Using standard 2D Unet model.")
         model = Unet(in_chans=args.in_chans, 
                      out_chans=args.out_chans, 
                      chans=args.chans, 
                      num_pool_layers=args.pools)
     elif args.model == "stackedUnet":
-        logging.info(f"Using stacked Unet model with multiple input to single output.")
+        if verbose:
+            logging.info(f"Using stacked Unet model with multiple input to single output.")
         model = StackedUnet(unet_num_ch_first_layer=args.chans, norm_type=args.norm_type_unet)
 
     if args.train:
@@ -37,12 +38,13 @@ def get_model(args):
     else:
         optimizer, scheduler = None, None
 
-    if args.load_model_from_huggingface != "None":
+    if args.load_model_from_huggingface != None:
         model = MyModel.from_pretrained(args.load_model_from_huggingface)
-        logging.info(f"Loaded model from huggingface {args.load_model_from_huggingface}")
+        if verbose:
+            logging.info(f"Loaded model from huggingface {args.load_model_from_huggingface}")
         current_epoch = 0
 
-    elif args.load_model_path != "None":
+    elif args.load_model_path != None:
         checkpoint_loaded = torch.load(args.load_model_path, map_location=torch.device(f"cuda:{args.gpu}"))
         model = model.cuda(args.gpu)
         model.load_state_dict(checkpoint_loaded['model'])
@@ -50,15 +52,18 @@ def get_model(args):
             optimizer.load_state_dict(checkpoint_loaded["optimizer"])
             scheduler.load_state_dict(checkpoint_loaded["scheduler"])
             current_epoch = checkpoint_loaded["epoch"]
-            logging.info(f"Loaded model, optimizer, scheduler from {args.load_model_path}")
+            if verbose:
+                logging.info(f"Loaded model, optimizer, scheduler from {args.load_model_path}")
         else:
-            logging.info(f"Loaded model from {args.load_model_path}")
+            if verbose:
+                logging.info(f"Loaded model from {args.load_model_path}")
             current_epoch = 0
         del checkpoint_loaded
     else:
         current_epoch = 0
 
-    logging.info(f"Built a {args.model} consisting of {sum(p.numel() for p in model.parameters()):,} parameters")
+    if verbose:
+        logging.info(f"Built a {args.model} consisting of {sum(p.numel() for p in model.parameters()):,} parameters")
 
     model = model.cuda(args.gpu)
 

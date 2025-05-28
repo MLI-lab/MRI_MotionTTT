@@ -52,7 +52,7 @@ if __name__ == '__main__':
             args.example_path = os.path.join(path_to_data,f'sub-0{sub_ind}',f'sub-0{sub_ind}_run-0{scan_ind}_kspace.h5')
             args.sensmaps_path = os.path.join(path_to_data,f'sub-0{sub_ind}',f'sub-0{sub_ind}_smaps.h5')
             # Give an additional name for a folder that then contains a set of experiments
-            args.experiment_run_folder_name = f"vivo_{sub_ind}/"
+            args.experiment_run_folder_name = f"sub-0{sub_ind}/"
                             
             # Set device index
             args.gpu= 3
@@ -108,7 +108,7 @@ if __name__ == '__main__':
             args.L1min_DC_threshold = 0.65
 
             # Control gpu memory consumption
-            args.L1min_nufft_max_coil_size = 7
+            args.L1min_nufft_max_coil_size = 2
             
             if args.L1min:
                 for L1min_DC_loss_thresholding in [True, False]:
